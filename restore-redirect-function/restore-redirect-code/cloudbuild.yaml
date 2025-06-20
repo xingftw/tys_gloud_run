@@ -1,0 +1,42 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  entrypoint: 'bash'
+  args:
+  - '-c'
+  - |
+    docker pull us-central1-docker.pkg.dev/tys-bi/gcf-artifacts/tys--bi__us--central1__restore--redirect:version_1
+    docker create --name temp-container us-central1-docker.pkg.dev/tys-bi/gcf-artifacts/tys--bi__us--central1__restore--redirect:version_1
+    mkdir -p /workspace/app
+    mkdir -p /workspace/workspace
+
+    # Inspect the container to see what's available
+    echo "Inspecting container:"
+    docker inspect temp-container || echo "Could not inspect container"
+
+    # Try to list directories by starting the container temporarily
+    echo "Trying to list directories in the container:"
+    docker start temp-container || echo "Could not start container"
+    docker exec temp-container ls -la / || echo "Could not list root directory"
+    docker exec temp-container ls -la /workspace/ || echo "Could not list workspace directory"
+    docker stop temp-container || echo "Could not stop container"
+
+    # Try to copy from various possible locations
+    docker cp temp-container:/app/. /workspace/app/ || echo "No /app directory found"
+    docker cp temp-container:/workspace/. /workspace/workspace/ || echo "No /workspace directory found"
+    docker cp temp-container:/function/. /workspace/app/ || echo "No /function directory found"
+    docker cp temp-container:/srv/. /workspace/app/ || echo "No /srv directory found"
+
+    # List what we extracted
+    echo "Contents of extracted directories:"
+    ls -la /workspace/app/ || echo "App directory is empty"
+    ls -la /workspace/workspace/ || echo "Workspace directory is empty"
+
+    # Make sure we have something to upload
+    touch /workspace/app/extracted_files.txt
+    echo "Files extracted from us-central1-docker.pkg.dev/tys-bi/gcf-artifacts/tys--bi__us--central1__restore--redirect:version_1" > /workspace/app/extracted_files.txt
+
+    docker rm temp-container
+artifacts:
+  objects:
+    location: 'gs://tys-bi-temp-bucket/restore-redirect-code/'
+    paths: ['app/**', 'workspace/**']
