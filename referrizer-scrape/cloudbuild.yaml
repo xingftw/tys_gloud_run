@@ -1,0 +1,34 @@
+steps:
+  # Build the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'us-central1-docker.pkg.dev/tys-bi/cloud-run-source-deploy/referrizer-scrape-dev:latest', '.']
+
+  # Push the container image to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'us-central1-docker.pkg.dev/tys-bi/cloud-run-source-deploy/referrizer-scrape-dev:latest']
+
+  # Deploy container image to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'referrizer-scrape-dev'
+      - '--image'
+      - 'us-central1-docker.pkg.dev/tys-bi/cloud-run-source-deploy/referrizer-scrape-dev:latest'
+      - '--region'
+      - 'us-central1'
+      - '--platform'
+      - 'managed'
+      - '--memory'
+      - '2Gi'
+      - '--timeout'
+      - '3600s'
+      - '--cpu'
+      - '2'
+      - '--concurrency'
+      - '1'
+      - '--allow-unauthenticated'
+
+images:
+  - 'us-central1-docker.pkg.dev/tys-bi/cloud-run-source-deploy/referrizer-scrape-dev:latest'

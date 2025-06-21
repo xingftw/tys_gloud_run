@@ -1,0 +1,9 @@
+requests
+beautifulsoup4
+selenium
+pandas
+pandas-gbq
+google-cloud-bigquery
+functions-framework
+webdriver-manager
+db-dtypes
