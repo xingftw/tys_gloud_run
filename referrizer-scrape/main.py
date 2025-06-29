@@ -45,7 +45,8 @@ def login_to_referrizer(driver):
         verification_element = WebDriverWait(driver, 5).until(
             EC.presence_of_element_located((By.XPATH, "//*[@id='verification-code']"))
         )
-        time.sleep(50)
+        print('Waiting for 100 seconds for verification code')
+        time.sleep(100)
 
         # If element exists, query BigQuery for verification code
         bigquery_credentials = 'tys-bi.json'
@@ -66,7 +67,6 @@ def login_to_referrizer(driver):
             # Find and click submit button for verification code
             verify_button = driver.find_element(By.XPATH, "//button[contains(@class, 'submit') or contains(@type, 'submit')]")
             verify_button.click()
-
             print(f"Verification code {verification_code} submitted")
         else:
             print("No verification code found in BigQuery")
@@ -158,14 +158,14 @@ def get_contact_details(driver, contact_id):
     # Click the view more button to expand additional fields
     click_view_more_button(driver)
     # Function already handles exceptions internally
-
+    
     # populate field data to be scraped
     scrape_info['pow_id'] = '[data-qa="contact-basic-info-integration-pow-id"]'
     scrape_info['last_time_account_dir_comm'] = '[data-qa="contact-basic-info-customer-fields-contact-last-contacted-date"]'
     scrape_info['last_time_contact_dir_comm'] = '[data-qa="contact-basic-info-customer-fields-contact-last-responded-date"]'
     
   
-        # Wait for the element to be present
+    # Wait for the element to be present
     for field in fields_to_scrape:
         try:
             element = driver.find_element(By.CSS_SELECTOR, scrape_info[field])
@@ -243,13 +243,13 @@ def main(request=None):
     # Always use these options for stability
     chrome_options.add_argument('--disable-gpu')
     chrome_options.add_argument('--no-sandbox')
-    # chrome_options.add_argument('--disable-dev-shm-usage')
-    # chrome_options.add_argument('--disable-extensions')
-    # chrome_options.add_argument('--disable-infobars')
-    # chrome_options.add_argument('--disable-popup-blocking')
-    # chrome_options.add_argument('--disable-notifications')
-    # chrome_options.add_argument('--ignore-certificate-errors')
-    # chrome_options.add_argument('--log-level=3')  # Suppress console messages
+    chrome_options.add_argument('--disable-dev-shm-usage')
+    chrome_options.add_argument('--disable-extensions')
+    chrome_options.add_argument('--disable-infobars')
+    chrome_options.add_argument('--disable-popup-blocking')
+    chrome_options.add_argument('--disable-notifications')
+    chrome_options.add_argument('--ignore-certificate-errors')
+    chrome_options.add_argument('--log-level=3')  # Suppress console messages
 
     # Use headless mode in cloud environments or when specified
     if is_cloud_environment or os.environ.get('USE_HEADLESS', False):
@@ -280,7 +280,7 @@ def main(request=None):
 
             # For Cloud Run, we need to use the Chrome binary that's installed in the container
             chrome_options.binary_location = "/usr/bin/google-chrome"
-            
+
             service = Service("/usr/local/bin/chromedriver")
         else:
             # For local development, try multiple approaches
@@ -330,7 +330,7 @@ def main(request=None):
     try:
         # Login to Referrizer
         login_to_referrizer(driver)
-
+        
         # Get contact IDs to process
         contact_ids_df = get_contact_ids()
         contact_ids_df = contact_ids_df.head(10)
