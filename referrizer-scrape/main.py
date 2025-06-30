@@ -15,8 +15,8 @@ from selenium.webdriver.chrome.options import Options
 
 
 
-bq_pow_mapping_table_id = 'tys-bi.referrizer.pow_mapping_dev'
-bq_pow_mapping_staging_table_id = 'tys-bi.referrizer.pow_mapping_staging_dev' 
+bq_pow_mapping_table_id = 'tys-bi.referrizer.pow_mapping'
+bq_pow_mapping_staging_table_id = 'tys-bi.referrizer.pow_mapping_staging' 
 
 
 def login_to_referrizer(driver):
@@ -215,6 +215,7 @@ def get_contact_details(driver, contact_id):
         'last_time_account_dir_comm' : [scraped_elements['last_time_account_dir_comm']],
         'last_time_contact_dir_comm' : [scraped_elements['last_time_contact_dir_comm']]
     })
+    
     print([contact_id,
            scraped_elements['pow_id'],
            scraped_elements['last_time_account_dir_comm'],
@@ -333,7 +334,6 @@ def main(request=None):
         
         # Get contact IDs to process
         contact_ids_df = get_contact_ids()
-        contact_ids_df = contact_ids_df.head(10)
         print(f"Total contacts to process: {len(contact_ids_df)}")
 
         results = []
