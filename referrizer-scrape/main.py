@@ -1,5 +1,6 @@
 
 import requests
+import sys
 from bs4 import BeautifulSoup
 import time
 from selenium import webdriver
@@ -37,12 +38,14 @@ def login_to_referrizer(driver):
         submit_button.click()
     except Exception as e:
         print(f"Error: {e}")
+        sys.exit("There was an issue with logging in")
+
     # Wait for login to complete
     time.sleep(2)
 
     # Check if verification code element exists
     try:
-        verification_element = WebDriverWait(driver, 5).until(
+        verification_element = WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.XPATH, "//*[@id='verification-code']"))
         )
         print('Waiting for 100 seconds for verification code')
@@ -74,6 +77,7 @@ def login_to_referrizer(driver):
     except Exception as e:
         # No verification code element found, continue with normal flow
         print("No verification code element found, continuing with login")
+        print(e)
         pass
 
 
@@ -130,11 +134,11 @@ def merge_pow_mapping():
 
 def click_view_more_button(driver):
     try:
-        view_more_button = WebDriverWait(driver, 5).until(
+        view_more_button = WebDriverWait(driver,10).until(
             EC.element_to_be_clickable((By.CSS_SELECTOR, 'button[data-qa="contact-basic-info-customer-fields-view-more-button"]'))
         )
         view_more_button.click()
-        time.sleep(0.5)  # Short wait to allow UI to respond
+        #time.sleep(0.5)  # Short wait to allow UI to respond
         return True
     except Exception as e:
         print(f"Error clicking view more button: {e}")
@@ -152,7 +156,7 @@ def get_contact_details(driver, contact_id):
         scraped_elements[field] = '-'
     scrape_info = {}
 
-    # Zoom out to 67%
+     # Zoom out to 67%
     driver.execute_script("document.body.style.zoom='67%'")
 
     # Click the view more button to expand additional fields
@@ -168,7 +172,8 @@ def get_contact_details(driver, contact_id):
     # Wait for the element to be present
     for field in fields_to_scrape:
         try:
-            element = driver.find_element(By.CSS_SELECTOR, scrape_info[field])
+            element = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, scrape_info[field])))
+            #element = driver.find_element(By.CSS_SELECTOR, scrape_info[field])
             scraped_elements[field] = element.text.strip()
         
         except Exception as e:
@@ -177,35 +182,35 @@ def get_contact_details(driver, contact_id):
     # Try up to 3 more times to get the POW ID if it's empty
 
 
-    for field in fields_to_scrape:
+    # for field in fields_to_scrape:
 
-        attempts = 0
-        max_attempts = 3
+    #     attempts = 0
+    #     max_attempts = 3
         
-        element_value = scraped_elements[field]
+    #     element_value = scraped_elements[field]
 
-        while (element_value == '' or element_value == '-') and attempts < max_attempts:
-            print(f"Retry attempt {attempts+1} for contact {contact_id} and element {field}")
+    #     while (element_value == '' or element_value == '-') and attempts < max_attempts:
+    #         print(f"Retry attempt {attempts+1} for contact {contact_id} and element {field}")
 
-            # Try clicking the view more button again
-            if click_view_more_button(driver):
-                try:
-                    # Wait a bit longer on retries
-                    time.sleep(1.5)
+    #         # Try clicking the view more button again
+    #         if click_view_more_button(driver):
+    #             try:
+    #                 # Wait a bit longer on retries
+    #                 time.sleep(1.5)
 
-                    # Try to find the POW ID element
-                    element = driver.find_element(By.CSS_SELECTOR, scrape_info[field])
-                    new_element_value = element.text.strip()
+    #                 # Try to find the POW ID element
+    #                 element = driver.find_element(By.CSS_SELECTOR, scrape_info[field])
+    #                 new_element_value = element.text.strip()
 
-                    if new_element_value:  # Only update if we got a non-empty value
-                        scraped_elements[field] = new_element_value
-                        print(f"Found {field} on retry: {new_element_value}")
-                        break  # Exit the loop if we found a valid element id
-                except Exception as e:
-                    print(f"Error finding {field} in retry attempt {attempts+1}: {e}")
-                    # Keep existing element_id value
+    #                 if new_element_value:  # Only update if we got a non-empty value
+    #                     scraped_elements[field] = new_element_value
+    #                     print(f"Found {field} on retry: {new_element_value}")
+    #                     break  # Exit the loop if we found a valid element id
+    #             except Exception as e:
+    #                 print(f"Error finding {field} in retry attempt {attempts+1}: {e}")
+    #                 # Keep existing element_id value
 
-            attempts += 1
+    #         attempts += 1
 
 
     # Create dataframe with both IDs
@@ -334,6 +339,7 @@ def main(request=None):
         
         # Get contact IDs to process
         contact_ids_df = get_contact_ids()
+
         print(f"Total contacts to process: {len(contact_ids_df)}")
 
         results = []
