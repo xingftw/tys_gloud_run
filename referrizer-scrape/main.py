@@ -38,6 +38,7 @@ def login_to_referrizer(driver):
         submit_button.click()
     except Exception as e:
         print(f"Error: {e}")
+        print(f"Page Source: {driver.page_source}")
         sys.exit("There was an issue with logging in")
 
     # Wait for login to complete
