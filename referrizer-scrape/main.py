@@ -21,6 +21,8 @@ bq_pow_mapping_staging_table_id = 'tys-bi.referrizer.pow_mapping_staging'
 
 
 def login_to_referrizer(driver):
+    ip_address = requests.get('https://www.curlmyip.org').text.replace('\n','')
+    print(f"My IP address is {ip_address}")
     driver.get("https://app.referrizer.com")
 
     # Wait for and fill login form
@@ -96,7 +98,7 @@ def get_contact_ids():
     WHERE partition_date = date_add(CURRENT_DATE('America/Chicago'), interval -1 day)
     and (m.contact_id is null or m.pow_id is null)
     ORDER BY lastVisitDate desc
-    LIMIT 1000
+    LIMIT 500
     """
     return bigquery_client.query(query).to_dataframe()
 

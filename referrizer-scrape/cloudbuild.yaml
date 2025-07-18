@@ -29,6 +29,14 @@ steps:
       - '--concurrency'
       - '1'
       - '--allow-unauthenticated'
+      - '--network'
+      - 'referrizer-vpc'
+      - '--subnet'
+      - 'referrizer-subnet'
+      - '--region'
+      - 'us-central1'
+      - '--vpc-egress'
+      - 'all-traffic'
 
 images:
   - 'us-central1-docker.pkg.dev/tys-bi/cloud-run-source-deploy/referrizer-scrape-dev:latest'
